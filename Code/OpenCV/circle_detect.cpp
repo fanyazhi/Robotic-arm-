@@ -21,11 +21,8 @@ void check_if_image_exist(const cv::Mat &img, const std::string &path) {
 // convert coordinate linearly
 // first four numbers are 2 sample points, returns the y value corsponding to x
 double convert(double x1, double y1, double x2, double y2, double x) {
-
 	double slope = (y2 - y1)/(x2 - x1);
 	double intercept = y1 - x1*slope;
-	// std::cout<<intercept<<std::endl;
-	
 	return x * slope+intercept;
 }
 
@@ -65,39 +62,18 @@ int main(int argc, char **argv) {
 	std::vector<cv::Vec3f> circles;
 	cv::HoughCircles(red_hue_image, circles, CV_HOUGH_GRADIENT, 1, red_hue_image.rows/8, 100, 20, 0, 0);
 
-	// Loop over all detected circles and outline them on the original image
+	// Loop over all detected circles and output their center location
 	if(circles.size() == 0) std::exit(-1);
 	for(size_t current_circle = 0; current_circle < circles.size(); ++current_circle) {
-		cv::Point center(std::round(circles[current_circle][0]), std::round(circles[current_circle][1]));
-		int radius = std::round(circles[current_circle][2]);
-
-		cv::circle(orig_image, center, radius, cv::Scalar(0, 255, 0), 5);
-		
-		// std::cout<<center.x<<" "<<center.y<<" "<<0.08<<std::endl;
-		
 		/* Now need to cnvert from pixel value to real distance
 		 * We are using a spline interpolation program to map the coordinates
 		 */
-		
 		double x_dist = convert(2110, 0.1, 743, 0.25, center.y); 
 		double y_dist = convert(833, -0.1, 2723, 0.1, center.x);
 		
+		// The z location is fixed to 0.08 m
 		std::cout<<x_dist<<" "<<y_dist<<" "<<0.08<<std::endl;
-		
 	}
-	
-	// Show images
-	cv::namedWindow("Threshold lower image", cv::WINDOW_NORMAL);
-	cv::imshow("Threshold lower image", lower_red_hue_range);
-	cv::namedWindow("Threshold upper image", cv::WINDOW_NORMAL);
-	cv::imshow("Threshold upper image", upper_red_hue_range);
-	cv::namedWindow("Combined threshold images", cv::WINDOW_NORMAL);
-	cv::imshow("Combined threshold images", red_hue_image);
-	cv::namedWindow("Detected red circles on the input image", cv::WINDOW_NORMAL);
-	cv::imshow("Detected red circles on the input image", orig_image);
-
-	cv::waitKey(0);
-
 	
 	return 0;
 }
